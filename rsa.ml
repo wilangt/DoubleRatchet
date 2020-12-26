@@ -33,14 +33,8 @@ let miller_rabin_primality_test n a =
 	(* effectue le test de primalité de Miller-Rabin *)
 	let s = p_adic_valuation 2 (n-1) in
 	let d = (n-1) / pow_int 2 s in
-	print_int s;
-	print_newline ();
-	print_int d;
-	print_newline ();
 	let rec aux = function
 		|(-1) -> false
 		|r -> let tmp = pow_mod_low_memory a (d*pow_int 2 r) n in 
-		print_int tmp;
-		print_newline ();
 		tmp = n-1 || aux (r-1)
 	in pow_mod_low_memory a d n = 1 || aux (s-1);;
