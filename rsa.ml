@@ -42,3 +42,25 @@ let miller_rabin_primality_test n a =
 		|r -> let tmp = pow_mod_low_memory a (d*pow_int 2 r) n in 
 		tmp = n-1 || aux (r-1)
 	in pow_mod_low_memory a d n = 1 || aux (s-1);;
+
+let is_prime_div n =
+	let rec aux = function
+		|[] -> true
+		|t::q -> if n mod t = 0 then false else aux q
+	in aux prime1000;;
+
+let is_prime_fermat n = 
+	let rec aux = function
+		|[] -> true
+		|t::q -> if not (fermat_primality_test n t) then false else aux q
+	in aux prime4;;
+
+let is_prime_miller_rabin n = 
+	let rec aux = function
+		|[] -> true
+		|t::q -> if not (miller_rabin_primality_test n t) then false else aux q
+	in aux prime25;;
+
+let is_prime n = 
+	(* Vérifie si n est probablement premier *)
+	is_prime_div n && is_prime_fermat n && is_prime_miller_rabin n;;
