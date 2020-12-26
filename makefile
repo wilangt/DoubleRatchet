@@ -1,18 +1,18 @@
 CC=ocamlopt
-CFLAGS=-W -Wall
+CFLAGS=
 EXEC=DoubleRatchet
-FILES="rsa.ml"
-FILESCMX="rsa.cmx"
+FILES=rsa.ml
+FILESCMX=rsa.cmx
 
 all: compile
 	$(CC) -o $(EXEC) $(FILESCMX)
 
 clean:
-	rm -f *.cmx *.cmi *.o
+	rm -f *.cmx *.cmi *.o *.out
 	rm -f $(EXEC)
 
 compile:
-	$(CC) -c $(FILES)
+	$(CC) $(CFLAGS) -c $(FILES)
 
 test: compile
 	$(CC) -c test.ml
