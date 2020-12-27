@@ -1,20 +1,24 @@
-CC=ocamlopt
-CFLAGS=
+OCAMLC=ocamlfind ocamlopt
 EXEC=DoubleRatchet
 FILES=rsa.ml
 FILESCMX=rsa.cmx
+PACKAGE=zarith
 
 all: compile
-	$(CC) -o $(EXEC) $(FILESCMX)
+	$(OCAMLC) -package $(PACKAGE) -linkpkg -o $(EXEC) $(FILESCMX)
 
 clean:
 	rm -f *.cmx *.cmi *.o *.out
 	rm -f $(EXEC)
 
 compile:
-	$(CC) $(CFLAGS) -c $(FILES)
+	$(OCAMLC) -package $(PACKAGE) -linkpkg -c $(FILES)
 
 test: compile
-	$(CC) -c test.ml
-	$(CC) -o $(EXEC) $(FILESCMX) test.cmx
+	$(OCAMLC) -package $(PACKAGE) -linkpkg -c test.ml
+	$(OCAMLC) -package $(PACKAGE) -linkpkg -o $(EXEC) $(FILESCMX) test.cmx
 	./$(EXEC)
+
+.PHONY: all
+.PHONY: compile
+.PHONY: test
