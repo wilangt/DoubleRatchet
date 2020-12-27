@@ -75,3 +75,26 @@ let is_prime_miller_rabin n =
 let is_prime n = 
 	(* Vérifie si n est probablement premier *)
 	(n <= Z.of_int 541 && List.mem (Z.to_int n) prime100) || (is_prime_div n && is_prime_fermat n && is_prime_miller_rabin n);;
+
+let next_prime n = 
+	(* Trouve le premier nombre premier superieur ou égal *)
+	let rec aux m = if is_prime m then m else aux (Z.succ (Z.succ m)) in
+	aux (if Z.is_odd n then n else (Z.succ n))
+
+let random_int lambda =
+	(* nombre entier aléatoire de lambda bits *)
+	let rec aux acc = function
+		|0 -> acc
+		|l -> let tmp = Z.shift_left acc 1 in aux (if Random.bool () then tmp else Z.succ tmp) (l-1)
+	in aux Z.one (lambda - 1);;
+
+let random_prime lambda =
+	(* nombre premier aléatoire de lambda bits *)
+	next_prime (random_int lambda)
+
+let rec check_random_prime lambda = function
+	(* vérifie que la fonction random_prime fonctionne correctement *)
+	|0 -> ()
+	|n -> 	if Z.probab_prime (random_prime lambda) 10 > 0 
+			then (print_string "ok\n"; check_random_prime lambda (n-1)) 
+			else failwith "erreur primalité"
