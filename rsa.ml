@@ -7,6 +7,12 @@ let ( -- ) = Z.sub;;
 let ( ** ) = Z.mul;;
 let ( // ) = Z.div;;
 
+let z0 = Z.zero;;
+let z1 = Z.one;;
+let z2 = Z.succ z1;;
+let z3 = Z.succ z2;;
+
+
 (* Générateur de nombres premiers industriels *)
 
 let prime4 = [2;3;5;7];;
@@ -14,8 +20,6 @@ let prime4 = [2;3;5;7];;
 let prime25 = [2;3;5;7;11;13;17;19;23;29;31;37;41;43;47;53;59;61;67;71;73;79;83;89;97];;
 
 let prime100 = [2;3;5;7;11;13;17;19;23;29;31;37;41;43;47;53;59;61;67;71;73;79;83;89;97;101;103;107;109;113;127;131;137;139;149;151;157;163;167;173;179;181;191;193;197;199;211;223;227;229;233;239;241;251;257;263;269;271;277;281;283;293;307;311;313;317;331;337;347;349;353;359;367;373;379;383;389;397;401;409;419;421;431;433;439;443;449;457;461;463;467;479;487;491;499;503;509;521;523;541];;
-
-let z2 = Z.of_int 2
 
 let rec pow_int x = function
 	(* Legacy *)
@@ -36,7 +40,7 @@ let rec pow_mod_low_memory x n m =
 let fermat_primality_test n a =
 	(* effectue le test de primalité de n avec 
 	le petit théorème de Fermat et le paramètre a *)
-	Z.powm a (Z.pred n) n = Z.one;;
+	Z.powm a (Z.pred n) n = z1;;
 
 let p_adic_valuation p n =
 	(* trouve la valuation p-adique de n *)
@@ -52,7 +56,7 @@ let miller_rabin_primality_test n a =
 		|(-1) -> false
 		|r -> let tmp = Z.powm a (d ** (Z.pow z2 r)) n in 
 		tmp = Z.pred n || aux (r-1)
-	in Z.powm a d n = Z.one || aux (s-1);;
+	in Z.powm a d n = z1 || aux (s-1);;
 
 let is_prime_div n =
 	let rec aux = function
@@ -76,6 +80,8 @@ let is_prime n =
 	(* Vérifie si n est probablement premier *)
 	(n <= Z.of_int 541 && List.mem (Z.to_int n) prime100) || (is_prime_div n && is_prime_fermat n && is_prime_miller_rabin n);;
 
+(* TODO : Résistance à l'attaque p-1 de Pollard *)
+
 let next_prime n = 
 	(* Trouve le premier nombre premier superieur ou égal *)
 	let rec aux m = if is_prime m then m else aux (Z.succ (Z.succ m)) in
@@ -86,7 +92,7 @@ let random_int lambda =
 	let rec aux acc = function
 		|0 -> acc
 		|l -> let tmp = Z.shift_left acc 1 in aux (if Random.bool () then tmp else Z.succ tmp) (l-1)
-	in aux Z.one (lambda - 1);;
+	in aux z1 (lambda - 1);;
 
 let random_prime lambda =
 	(* nombre premier aléatoire de lambda bits *)
@@ -98,3 +104,29 @@ let rec check_random_prime lambda = function
 	|n -> 	if Z.probab_prime (random_prime lambda) 10 > 0 
 			then (print_string "ok\n"; check_random_prime lambda (n-1)) 
 			else failwith "erreur primalité"
+
+
+(* Cryptosystème RSA *)
+
+type plaintext = Z.t;;
+type ciphertext = Z.t;;
+type public_key = Z.t * int;;
+type secret_key = Z.t;;
+
+let extended_euclidian_algorithm phi e =
+	let rec aux r u v r' u' v' =
+		if r' = z0 then (r, u, v) else 
+		let q = r//r' in aux r' u' v' (r -- (q ** r')) (u -- (q ** u')) (v -- (q ** v'))
+	in aux phi z1 z0 e z0 z1;;
+
+let find_e_d phi =
+	let rec aux e = 
+		let (r, u, v) = extended_euclidian_algorithm phi e in
+		if r = z1 then e,v else aux (Z.succ e)
+	in aux z3;;
+
+let generate_crypto_system lambda =
+	let p = random_prime (lambda - 1) and q = random_prime (lambda - 1) in
+	let n = p ** q and phi = (Z.pred p) ** (Z.pred q) in
+	let e,d = find_e_d phi in
+	((n, e), d);;
