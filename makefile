@@ -1,7 +1,7 @@
 OCAMLC=ocamlfind ocamlopt
 EXEC=DoubleRatchet
-FILES=rsa.ml
-FILESCMX=rsa.cmx
+FILES=rsa.ml DoubleRatchet.ml
+FILESCMX=rsa.cmx DoubleRatchet.cmx
 PACKAGE=zarith
 
 all: compile
