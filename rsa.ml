@@ -110,8 +110,8 @@ let rec check_random_prime lambda = function
 
 type plaintext = Z.t;;
 type ciphertext = Z.t;;
-type public_key = Z.t * int;;
-type secret_key = Z.t;;
+type public_key = Z.t * Z.t;;
+type secret_key = Z.t * Z.t;;
 
 let extended_euclidian_algorithm phi e =
 	let rec aux r u v r' u' v' =
@@ -125,18 +125,18 @@ let find_e_d phi =
 		if r = z1 then (e, (Z.erem v phi)) else aux (Z.succ e)
 	in aux z3;;
 
-let generate_keys lambda =
+let generate_keys (lambda : int) : public_key * secret_key =
 	let p = random_prime (lambda - 1) and q = random_prime (lambda - 1) in
 	let n = p ** q and phi = (Z.pred p) ** (Z.pred q) in
 	let e,d = find_e_d phi in
 	((n, e), (n,d));;
 
-let encrypt pk m =
+let encrypt (pk : public_key) (m : plaintext) : ciphertext =
 	let n,e = pk in
 	if m < n
 	then Z.powm m e n
 	else failwith "m is out of plaintext space"
 
-let decrypt sk c =
+let decrypt (sk : secret_key) (c : ciphertext) : plaintext =
 	let n, d = sk in
 	Z.powm c d n
