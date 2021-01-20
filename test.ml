@@ -1,6 +1,10 @@
 (* CE FICHIER NE FAIT PAS PARTIE DU MINI-PROJET. IL NE M'A SERVI QU'À TESTER MES FONCTIONS. 
 JE LE LAISSE POUR SI QUELQU'UN VEUT VÉRIFIER MES FONCTIONS *)
 
+let pnl = print_newline and ps = print_string and pi = print_int and pz = Z.print and pf = Printf.printf;;
+let pf s = ps s; pnl ();;
+let pff s = ps s; ps s; pnl ();;
+
 let test s i = 
     print_string s;
     print_newline ();
@@ -118,4 +122,45 @@ List.iter print_int ex_int;;
 print_newline ();; print_newline ();;
 
 ztest "hash sha256" (Dr.hash "bacon");;
-test "nb bits" (Z.numbits (Dr.hash "hdfsqdsfh67886jklq"));;
+test "nb bits" (Z.numbits (Dr.hash "hdfsqdhjksfh67886jklq"));;
+
+ztest "hash 1024" (Dr.hash1024 "Lorem ipsum dolor sit amet, consetetur sadipscing elitr");;
+test "nb 1024" (Z.numbits (Dr.hash1024 "hdfsqdhjksfh67886jklq"));;
+
+(*
+let key = "abcd1234abcd1234"
+and iv  = "1234abcd1234abcd"
+and msg = "fire the missile"
+
+let aes     = new Cryptokit.Block.aes_encrypt key
+let aes_cbc = new Cryptokit.Block.cbc_encrypt ~iv aes
+
+let cip =
+  let size =
+    int_of_float (ceil (float String.(length msg) /. 16.) *. 16.) in
+  String.create size
+
+let () = aes_cbc#transform msg 0 cip 0
+*)
+
+let cleartext = "Hello World";;
+let key = "wxyzwxyzwxyzwxy" ^ (Char.escaped (Char.chr 126));; (* [|32;126|] *)
+
+let aes = 
+  Cryptokit.Cipher.(aes ~mode:ECB ~pad:Cryptokit.Padding.length
+                    key Encrypt);;
+
+let aes2 = 
+  Cryptokit.Cipher.(aes ~mode:ECB ~pad:Cryptokit.Padding.length
+                    key Decrypt);;
+
+
+let ciphertext = Cryptokit.transform_string aes cleartext;;
+
+print_string ciphertext;;
+
+let plaintext = Cryptokit.transform_string aes2 ciphertext;;
+
+pff plaintext;;
+
+pff (Aes.random_string 16);;
