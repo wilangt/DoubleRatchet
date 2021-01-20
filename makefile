@@ -2,10 +2,10 @@ OCAMLC=ocamlfind ocamlopt
 EXEC=Demo
 FILES=rsa.ml aes.ml dr.ml demo.ml
 FILESCMX=rsa.cmx aes.cmx dr.cmx demo.cmx
-PACKAGE=zarith
+PACKAGE=-package zarith -package nocrypto -package cryptokit
 
 all: clear compile
-	@$(OCAMLC) -package $(PACKAGE) -linkpkg -o $(EXEC) $(FILESCMX)
+	@$(OCAMLC) $(PACKAGE) -linkpkg -o $(EXEC) $(FILESCMX)
 	@./Demo
 	@rm -f *.cmx *.cmi *.o *.out
 	@rm -f $(EXEC)
@@ -18,11 +18,11 @@ clean:
 	rm -f $(EXEC)
 
 compile:
-	@$(OCAMLC) -package $(PACKAGE) -linkpkg -c $(FILES)
+	@$(OCAMLC) $(PACKAGE) -linkpkg -c $(FILES)
 
 test: compile
-	$(OCAMLC) -package $(PACKAGE) -linkpkg -c test.ml
-	$(OCAMLC) -package $(PACKAGE) -linkpkg -o $(EXEC) $(FILESCMX) test.cmx
+	$(OCAMLC) $(PACKAGE) -linkpkg -c test.ml
+	$(OCAMLC) $(PACKAGE) -linkpkg -o $(EXEC) rsa.cmx aes.cmx dr.cmx test.cmx
 	./$(EXEC)
 
 .PHONY: all
