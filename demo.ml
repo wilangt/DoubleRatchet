@@ -2,8 +2,7 @@
 
 let pnl = print_newline and ps = print_string and pi = print_int and pz = Z.print and pf = Printf.printf;;
 
-(* let pause = read_line;; *)
-let pause () = pnl () ; 1;;
+let pause = read_line;;
 
 let pf s = ps s; let _ = pause () in ();; (* aller à la ligne *)
 let pff s = ps s; pnl (); let _ = pause () in ();; (* sauter une ligne *)
