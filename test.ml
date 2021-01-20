@@ -147,5 +147,11 @@ test "ok ?" (bti (k1 = k2));;
 
 let alice, bob = Dr.init ();;
 
-pff (Dr.decrypt alice (Dr.encrypt bob "ok"));; (* Bob -> Alice *)
-pff (Dr.decrypt bob (Dr.encrypt alice "ok"));; (* Alice -> Bob *)
+pff (Dr.decrypt alice (Dr.encrypt bob "1"));; (* Bob -> Alice *)
+pff (Dr.decrypt bob (Dr.encrypt alice "2"));; (* Alice -> Bob *)
+pff (Dr.decrypt alice (Dr.encrypt bob "3"));; (* Bob -> Alice *)
+pff (Dr.decrypt alice (Dr.encrypt bob "4"));; (* Bob -> Alice *)
+pff (Dr.decrypt alice (Dr.encrypt bob "5"));; (* Bob -> Alice *)
+pff (Dr.decrypt bob (Dr.encrypt alice "5"));; (* Alice -> Bob *)
+pff (Dr.decrypt bob (Dr.encrypt alice "7"));; (* Alice -> Bob *)
+pff (Dr.decrypt alice (Dr.encrypt bob "8"));; (* Bob -> Alice *)

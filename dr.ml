@@ -112,7 +112,7 @@ let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_public_key) =
 	if not i.sending then 
 		begin
 		let sk_bis = choose_secret () in
-		let dh_shared_secret = compute_secret sk_bis i.pk in
+		let dh_shared_secret = compute_secret sk_bis i.pk in Z.print dh_shared_secret; print_newline ();
 		let hash_dh_shared_secret = safe_hash (Z.to_string dh_shared_secret) in
 		let rk_bis, ck_bis = kdf i.rk hash_dh_shared_secret in
 		i.rk <- rk_bis;
@@ -129,9 +129,10 @@ let decrypt (j : interlocuteur) (cs : ciphertext * dh_public_key) : plaintext =
 	j.sending <- false;
 	afficher j;
 	let c, shared_secret = cs in 
+	j.pk <- shared_secret;
 	if not j.receiving then
 		begin
-		let dh_shared_secret = compute_secret j.sk shared_secret in
+		let dh_shared_secret = compute_secret j.sk shared_secret in Z.print dh_shared_secret; print_newline ();
 		let hash_dh_shared_secret = safe_hash (Z.to_string dh_shared_secret) in
 		let rk_bis, ck_bis = kdf j.rk hash_dh_shared_secret in
 		j.rk <- rk_bis;
