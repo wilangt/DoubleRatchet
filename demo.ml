@@ -120,4 +120,40 @@ de messagerie instantanée (Signal et WhatsApp par exemple) pour chiffrer les co
 de bout en bout, avec des hypothèses de sécurité interressante.\n
 Décrire le fonctionnement de l'algorithme ici serait long et peu interressant donc le lecteur 
 est invité à regarder cette vidéo https://www.youtube.com/watch?v=9sO2qdTci-s (11 minutes) et 
-à admirer son fonctionnement"
+à admirer son fonctionnement";;
+
+pff "Initialisation de la conversation ... ";;
+let alice, bob = Dr.init ();;
+pf "État d'Alice : ";;
+Dr.afficher alice;;
+pf "État de Bob : ";;
+Dr.afficher bob;;
+
+pff "On notera une harmonisation de certains paramètres. Cette synchronisation se conserve au fur et à mesur des messages.";;
+
+pf "Si Alice veut saluer bob, elle envoie";;
+let c,s = Dr.encrypt alice "Bonjour";;
+pff c;;
+
+pf "Et son état évolue en ";;
+Dr.afficher alice;;
+
+pf "L'état de Bob n'évolue lui qu'à la récéprtion du message : "
+let m = Dr.decrypt bob (c,s);;
+Dr.afficher bob;;
+
+pf "Le message est bien le bon :";;
+pff m;;
+
+pff "On peut ainsi continuer indéfiniment, avec parfois plusieurs messages d'affilé de la même personne.";;
+
+pf (Dr.decrypt alice (Dr.encrypt bob "message 1"));; (* Bob -> Alice *)
+pf (Dr.decrypt bob (Dr.encrypt alice "message 2"));; (* Alice -> Bob *)
+pf (Dr.decrypt alice (Dr.encrypt bob "message 3"));; (* Bob -> Alice *)
+pf (Dr.decrypt alice (Dr.encrypt bob "message 4"));; (* Bob -> Alice *)
+pf (Dr.decrypt alice (Dr.encrypt bob "message 5"));; (* Bob -> Alice *)
+pf (Dr.decrypt bob (Dr.encrypt alice "message 5"));; (* Alice -> Bob *)
+pf (Dr.decrypt bob (Dr.encrypt alice "message 7"));; (* Alice -> Bob *)
+pff (Dr.decrypt alice (Dr.encrypt bob "message 8"));; (* Bob -> Alice *)
+
+pff "THE END";;
