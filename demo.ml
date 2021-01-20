@@ -85,3 +85,39 @@ ps "Par exemple, ce message aura été divisé en ";; pi (List.length reve_chiff
 (* AES *)
 
 pff " * * * * * * * * * * AES * * * * * * * * * * ";;
+
+pf "Idem, mais avec de la cryptographie symétrique, c'est beaucoup plus simple. On génère une clef :";;
+let key = Aes.generate_key ();;
+pff key;;
+pf "On l'utilise pour chiffrer des messages (ici 'Bonjour Bob') : ";;
+let chiffre = Aes.encrypt key "Bonjour Bob";;
+pf chiffre;;
+pf "Mais aussi pour déchiffrer :";;
+let dechiffre = Aes.decrypt key chiffre;;
+pff dechiffre;;
+
+pf "On peut chiffrer des messages arbitrairement long grâce à la librairie cryptokit : ";;
+pff (Aes.encrypt key dream);;
+
+pf "Et surtout on a implémenté une version déterministe de l'algorithme de génération de clef : 
+à partir d'un hashé de 256 bits ..."
+let h = Dr.safe_hash (Aes.random_string 50);;
+pzf h;;
+pf "... on génère toujours la même clef AES :";;
+pf (Aes.generate_key_deterministe h);;
+pf (Aes.generate_key_deterministe h);;
+pff (Aes.generate_key_deterministe h);;
+
+pff "Cela nous sera très utile pour la suite";;
+
+(* Double Ratchet *)
+
+pff " * * * * * * * * * * Algorithme du Double Ratchet * * * * * * * * * * ";;
+
+pff "L'algorithme du Double Ratchet (anciennement Axolotl Ratchet) est un algorithme de 
+gestion de clés cryptographique développé en 2013. Il est utilisé par de nombreux services 
+de messagerie instantanée (Signal et WhatsApp par exemple) pour chiffrer les conversations
+de bout en bout, avec des hypothèses de sécurité interressante.\n
+Décrire le fonctionnement de l'algorithme ici serait long et peu interressant donc le lecteur 
+est invité à regarder cette vidéo https://www.youtube.com/watch?v=9sO2qdTci-s (11 minutes) et 
+à admirer son fonctionnement"
