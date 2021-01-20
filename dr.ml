@@ -71,6 +71,7 @@ type interlocuteur = {
 };;
 
 let afficher (i : interlocuteur) = 
+	(* Affiche l'état d'un interlocuteur *)
 	let p s k = print_string s; Z.print k; print_newline () in
 	p "root_key : " i.rk;
 	p "chain_key : " i.ck;
@@ -86,6 +87,7 @@ let kdf (h1 : hash) (h2 : hash) : (hash * hash) =
 	safe_hash (s1^s2), safe_hash (s2^s1);;
 
 let init () : (interlocuteur * interlocuteur) = 
+	(* Initialise le dialogue *)
 	let alice_secret_rk = choose_secret () and bob_secret_rk = choose_secret () in
 	let alice_share_rk = share_secret alice_secret_rk and bob_share_rk = share_secret bob_secret_rk in
 	let alice_sk = choose_secret () and bob_sk = choose_secret () in
@@ -106,13 +108,13 @@ let init () : (interlocuteur * interlocuteur) =
 		sending = false;
 	} in alice, bob;;
 
-let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_public_key) = 
+let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_public_key) =
+	(* chiffre un message *)
 	i.receiving <- false;
-	afficher i;
 	if not i.sending then 
 		begin
 		let sk_bis = choose_secret () in
-		let dh_shared_secret = compute_secret sk_bis i.pk in Z.print dh_shared_secret; print_newline ();
+		let dh_shared_secret = compute_secret sk_bis i.pk in
 		let hash_dh_shared_secret = safe_hash (Z.to_string dh_shared_secret) in
 		let rk_bis, ck_bis = kdf i.rk hash_dh_shared_secret in
 		i.rk <- rk_bis;
@@ -126,13 +128,13 @@ let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_public_key) =
 	c, share_secret i.sk;;
 
 let decrypt (j : interlocuteur) (cs : ciphertext * dh_public_key) : plaintext = 
+	(* déchiffre un message *)
 	j.sending <- false;
-	afficher j;
 	let c, shared_secret = cs in 
 	j.pk <- shared_secret;
 	if not j.receiving then
 		begin
-		let dh_shared_secret = compute_secret j.sk shared_secret in Z.print dh_shared_secret; print_newline ();
+		let dh_shared_secret = compute_secret j.sk shared_secret in
 		let hash_dh_shared_secret = safe_hash (Z.to_string dh_shared_secret) in
 		let rk_bis, ck_bis = kdf j.rk hash_dh_shared_secret in
 		j.rk <- rk_bis;
@@ -143,4 +145,3 @@ let decrypt (j : interlocuteur) (cs : ciphertext * dh_public_key) : plaintext =
 	let mk = Aes.generate_key_deterministe mk_hash in
 	let m = Aes.decrypt mk c in
 	m;;
-
