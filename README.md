@@ -8,4 +8,3 @@ Mini-projet L3IF de l'ENS de Lyon
 ## Dépendances
 * Librairie Zarith (`opam install zarith`)
 * Librairie CryptoKit (`opam install cryptokit`)
-* Librairir NoCrypto (`opam install nocrypto`)

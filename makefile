@@ -2,7 +2,7 @@ OCAMLC=ocamlfind ocamlopt
 EXEC=Demo
 FILES=rsa.ml aes.ml dr.ml demo.ml
 FILESCMX=rsa.cmx aes.cmx dr.cmx demo.cmx
-PACKAGE=-package zarith -package nocrypto -package cryptokit
+PACKAGE=-package zarith -package cryptokit
 
 all: clear compile
 	@$(OCAMLC) $(PACKAGE) -linkpkg -o $(EXEC) $(FILESCMX)
