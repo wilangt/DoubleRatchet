@@ -44,8 +44,8 @@ let hash s = Rsa.base_to_int (Z.of_int 256) (List.map Z.of_int (List.map Char.co
 let hash1024 s = let h = hash s in Rsa.base_to_int (Z.pow z2 256) [h;h;h;h]
 
 let safe_hash s = Z.logor (Rsa.base_to_int (Z.of_int 256) (List.map Z.of_int (List.map Char.code (explode (sha256 s))))) (Z.pow z2 255);; 
+let safe h = Z.logor h (Z.pow z2 255);;
 (* Le bit de poid fort est toujours à 1 *)
-
 
 (* Algorithme du Double Ratchet *)
 
@@ -62,11 +62,11 @@ type dh_private_key = Z.t;;
 type dh_publique_key = Z.t;;
 
 type interlocuteur = {
-	rk : root_key;
-	ck : chain_key;
-	mk : message_key;
-	sk : dh_private_key;
-	pk : dh_publique_key; (* Comme pour le RSA, pointe vers la clef publique de l'autre interlocuteur*)
+	mutable rk : root_key;
+	mutable ck : chain_key;
+	mutable sk : dh_private_key;
+	mutable pk : dh_publique_key; (* Comme pour le RSA, pointe vers la clef publique de l'autre interlocuteur*)
+	mutable fst : bool; (* Premier message de la série ? *)
 };;
 
 let kdf (h1 : hash) (h2 : hash) : (hash * hash) =
@@ -82,14 +82,30 @@ let init () : (interlocuteur * interlocuteur) =
 	let alice = {
 		rk = compute_secret alice_secret_rk bob_share_rk;
 		ck = z0;
-		mk = z0;
 		sk = alice_sk;
 		pk = bob_pk;
+		fst = true;
 	} and bob = {
 		rk = compute_secret bob_secret_rk alice_share_rk;
 		ck = z0;
-		mk = z0;
 		sk = bob_sk;
 		pk = alice_pk;
+		fst = true;
 	} in alice, bob;;
 	
+let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_publique_key) = 
+	if i.fst then
+		begin
+		let sk_bis = choose_secret () in
+		let dh_shared_secret = compute_secret sk_bis i.pk in
+		let hash_dh_shared_secret = safe_hash (Z.to_string dh_shared_secret) in
+		let rk_bis, ck_bis = kdf i.rk hash_dh_shared_secret in
+		i.rk <- rk_bis;
+		i.ck <- ck_bis;
+		i.sk <- sk_bis;
+		i.fst <- false;
+		end;
+	let ck_bis, mk_hash = kdf i.ck (safe_hash "") in
+	let mk = Aes.generate_key_deterministe mk_hash in
+	let c = Aes.encrypt mk m in
+	c, i.sk;;

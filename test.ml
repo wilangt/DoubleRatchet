@@ -143,3 +143,9 @@ let k1 = Dr.compute_secret a bb and k2 = Dr.compute_secret b aa;;
 ztest "k1" k1;;
 ztest "k2" k2;;
 test "ok ?" (bti (k1 = k2));;
+
+
+let alice, bob = Dr.init ();;
+
+let c = fst (Dr.encrypt alice "test") in
+pff c;;
