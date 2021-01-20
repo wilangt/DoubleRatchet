@@ -105,13 +105,6 @@ print_newline ();;
 test "bits" ((Z.popcount Dr.p2048));;
 test "is prime" (bti (Z.probab_prime Dr.p2048 10 > 0))
 
-let a = Dr.choose_secret () and b = Dr.choose_secret ();;
-let aa = Dr.share_secret a and bb = Dr.share_secret b;;
-let k1 = Dr.compute_secret a bb and k2 = Dr.compute_secret b aa;;
-ztest "k1" k1;;
-ztest "k2" k2;;
-test "ok ?" (bti (k1 = k2));;
-
 
 let hash = Cryptokit.Hash.sha256 ();;
 
@@ -143,3 +136,10 @@ for i = 0 to 10 do
   pf e; pff (Aes.decrypt k e)
 done;;
 
+
+let a = Dr.choose_secret () and b = Dr.choose_secret ();;
+let aa = Dr.share_secret a and bb = Dr.share_secret b;;
+let k1 = Dr.compute_secret a bb and k2 = Dr.compute_secret b aa;;
+ztest "k1" k1;;
+ztest "k2" k2;;
+test "ok ?" (bti (k1 = k2));;

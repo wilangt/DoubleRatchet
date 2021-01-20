@@ -45,3 +45,25 @@ let hash1024 s = let h = hash s in Rsa.base_to_int (Z.pow z2 256) [h;h;h;h]
 
 let safe_hash s = Z.logor (Rsa.base_to_int (Z.of_int 256) (List.map Z.of_int (List.map Char.code (explode (sha256 s))))) (Z.pow z2 255);; 
 (* Le bit de poid fort est toujours à 1 *)
+
+
+(* Algorithme du Double Ratchet *)
+
+type hash = Z.t;; (* haché de 256 bits *)
+type aes_key = Z.t;; (* Clef  AES128 donc 256 bits*)
+
+(* Notations reprises de la documentation Signal : https://signal.org/docs/specifications/doubleratchet/ *)
+type root_key = hash;; (* Entier de 256 bits *)
+type chain_key = hash;; (* Entier de 256 bits *)
+type message_key = aes_key;; (* Entier de 256 bits *)
+type dh_private_key = Z.t;;
+type dh_publique_key = Z.t;;
+
+type interlocuteur = {
+	rk : root_key;
+	ck : chain_key;
+	mk : message_key;
+	sk : dh_private_key;
+	pk : dh_publique_key; (* Comme pour le RSA, pointe vers la clef publique de l'autre interlocuteur*)
+};;
+
