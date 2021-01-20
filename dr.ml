@@ -76,6 +76,8 @@ let afficher (i : interlocuteur) =
 	p "chain_key : " i.ck;
 	p "private_key : " i.sk;
 	p "public_key : " i.pk;
+	if i.sending then print_string "sending\n";
+	if i.receiving then print_string "receiving\n";
 	print_newline ();;
 
 let kdf (h1 : hash) (h2 : hash) : (hash * hash) =
@@ -104,17 +106,9 @@ let init () : (interlocuteur * interlocuteur) =
 		sending = false;
 	} in alice, bob;;
 
-let root_chain_update (i : interlocuteur) (send : bool) =
-	let sk_bis = choose_secret () in
-	let dh_shared_secret = compute_secret sk_bis i.pk in
-	let hash_dh_shared_secret = safe_hash (Z.to_string dh_shared_secret) in
-	let rk_bis, ck_bis = kdf i.rk hash_dh_shared_secret in
-	i.rk <- rk_bis;
-	i.ck <- ck_bis;
-	i.sk <- sk_bis;
-	i.sending <- true;;
-
 let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_public_key) = 
+	i.receiving <- false;
+	afficher i;
 	if not i.sending then 
 		begin
 		let sk_bis = choose_secret () in
@@ -125,15 +119,15 @@ let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_public_key) =
 		i.ck <- ck_bis;
 		i.sk <- sk_bis;
 		i.sending <- true;
-		i.receiving <- false;
 		end;
-	afficher i;
 	let ck_bis, mk_hash = kdf i.ck (safe_hash "") in 
 	let mk = Aes.generate_key_deterministe mk_hash in
 	let c = Aes.encrypt mk m in
 	c, share_secret i.sk;;
 
 let decrypt (j : interlocuteur) (cs : ciphertext * dh_public_key) : plaintext = 
+	j.sending <- false;
+	afficher j;
 	let c, shared_secret = cs in 
 	if not j.receiving then
 		begin
@@ -142,10 +136,8 @@ let decrypt (j : interlocuteur) (cs : ciphertext * dh_public_key) : plaintext =
 		let rk_bis, ck_bis = kdf j.rk hash_dh_shared_secret in
 		j.rk <- rk_bis;
 		j.ck <- ck_bis;
-		j.sending <- false;
 		j.receiving <- true;
 		end;
-	afficher j;
 	let ck_bis, mk_hash = kdf j.ck (safe_hash "") in 
 	let mk = Aes.generate_key_deterministe mk_hash in
 	let m = Aes.decrypt mk c in
