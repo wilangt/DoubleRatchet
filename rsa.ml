@@ -112,7 +112,7 @@ type public_key = Z.t * Z.t;;
 type secret_key = Z.t * Z.t;;
 type plaintext = Z.t;;
 type ciphertext = Z.t;;
-type ciphertext_message = Z.t;;
+type ciphertext_message = Z.t list;;
 
 let extended_euclidian_algorithm phi e =
 	let rec aux r u v r' u' v' =
@@ -146,7 +146,10 @@ let decrypt (sk : secret_key) (c : ciphertext) : plaintext =
 	let n, d = sk in
 	Z.powm c d n;;
 
-(*
+(* Les 6 fonctions suivantes ne servent qu'à transformer une longue chaine de caractère
+en liste d'entiers de taille raisonnable (i.e. inférieur à 2^lambda)
+Elles ne sont pas très très interressantes *)
+
 let text_to_block (size : int) (s : string) : string list = 
 	(* Coupe une chaine s en chaines de taille au plus size *)
 	let n = String.length s in
@@ -154,7 +157,8 @@ let text_to_block (size : int) (s : string) : string list =
 		|i when i < 0 -> (String.sub s 0 (size + i)) :: acc
 		|i -> aux ((String.sub s i size) :: acc) (i - size)
 	in aux [] (n-size);;
-*)
+
+let block_to_text = String.concat "";;
 
 let rec int_to_base b = function
 	(* Écriture en base b de n *)
@@ -177,16 +181,17 @@ let int_to_string n =
 	let explode = List.map Char.chr liste_ascii in
 	String.concat "" (List.map (String.make 1) explode);;
 
-(*
-let string_to_block s lambda =
-	let lambdaa = lambda - 7 (* nombre de bit d'un caractère ASCII *) - 5 (* marge *) in
-	let block_list = text_to_block lambdaa s in
-	List.map block_list
-*)
-
 let encrypt_message (pk : public_key) (m : string) : ciphertext_message =
 	(* Chiffre un message ASCII *)
-	encrypt pk (string_to_int m);;
+	let n,e = pk in
+	let	lambda = Z.numbits n in
+	let lambdaa = (lambda - 5) / 7 in (* ASCII est codé sur 7 bits ; -5 par sécurité *)
+	let block_list = text_to_block lambdaa m in
+	let int_list = List.map (string_to_int) block_list in
+	List.map (encrypt pk) int_list;;
 
 let decrypt_message (sk : secret_key) (c : ciphertext_message) : string =
-	int_to_string (decrypt sk c);;
+	(* Déchiffre un message ASCII *)
+	let int_list = List.map (decrypt sk) c in
+	let block_list = List.map (int_to_string) int_list in
+	block_to_text block_list;;
