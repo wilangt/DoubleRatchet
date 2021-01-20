@@ -59,15 +59,24 @@ type root_key = hash;; (* Entier de 256 bits *)
 type chain_key = hash;; (* Entier de 256 bits *)
 type message_key = aes_key;; (* Entier de 256 bits *)
 type dh_private_key = Z.t;;
-type dh_publique_key = Z.t;;
+type dh_public_key = Z.t;;
 
 type interlocuteur = {
 	mutable rk : root_key;
 	mutable ck : chain_key;
 	mutable sk : dh_private_key;
-	mutable pk : dh_publique_key; (* Comme pour le RSA, pointe vers la clef publique de l'autre interlocuteur*)
-	mutable fst : bool; (* Premier message de la série ? *)
+	mutable pk : dh_public_key; (* Comme pour le RSA, pointe vers la clef publique de l'autre interlocuteur*)
+	mutable receiving : bool; (* en train de recevoir des messages ? *)
+	mutable sending : bool; (* en train d'envoyer des message *)
 };;
+
+let afficher (i : interlocuteur) = 
+	let p s k = print_string s; Z.print k; print_newline () in
+	p "root_key : " i.rk;
+	p "chain_key : " i.ck;
+	p "private_key : " i.sk;
+	p "public_key : " i.pk;
+	print_newline ();;
 
 let kdf (h1 : hash) (h2 : hash) : (hash * hash) =
 	(* Fonction de dérivation de clef, implémenté grâce à des fonctions de hachage *)
@@ -84,17 +93,29 @@ let init () : (interlocuteur * interlocuteur) =
 		ck = z0;
 		sk = alice_sk;
 		pk = bob_pk;
-		fst = true;
+		receiving = false;
+		sending = false;
 	} and bob = {
 		rk = compute_secret bob_secret_rk alice_share_rk;
 		ck = z0;
 		sk = bob_sk;
 		pk = alice_pk;
-		fst = true;
+		receiving = false;
+		sending = false;
 	} in alice, bob;;
-	
-let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_publique_key) = 
-	if i.fst then
+
+let root_chain_update (i : interlocuteur) (send : bool) =
+	let sk_bis = choose_secret () in
+	let dh_shared_secret = compute_secret sk_bis i.pk in
+	let hash_dh_shared_secret = safe_hash (Z.to_string dh_shared_secret) in
+	let rk_bis, ck_bis = kdf i.rk hash_dh_shared_secret in
+	i.rk <- rk_bis;
+	i.ck <- ck_bis;
+	i.sk <- sk_bis;
+	i.sending <- true;;
+
+let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_public_key) = 
+	if not i.sending then 
 		begin
 		let sk_bis = choose_secret () in
 		let dh_shared_secret = compute_secret sk_bis i.pk in
@@ -103,9 +124,30 @@ let encrypt (i : interlocuteur) (m : plaintext) : (ciphertext * dh_publique_key)
 		i.rk <- rk_bis;
 		i.ck <- ck_bis;
 		i.sk <- sk_bis;
-		i.fst <- false;
+		i.sending <- true;
+		i.receiving <- false;
 		end;
-	let ck_bis, mk_hash = kdf i.ck (safe_hash "") in
+	afficher i;
+	let ck_bis, mk_hash = kdf i.ck (safe_hash "") in 
 	let mk = Aes.generate_key_deterministe mk_hash in
 	let c = Aes.encrypt mk m in
-	c, i.sk;;
+	c, share_secret i.sk;;
+
+let decrypt (j : interlocuteur) (cs : ciphertext * dh_public_key) : plaintext = 
+	let c, shared_secret = cs in 
+	if not j.receiving then
+		begin
+		let dh_shared_secret = compute_secret j.sk shared_secret in
+		let hash_dh_shared_secret = safe_hash (Z.to_string dh_shared_secret) in
+		let rk_bis, ck_bis = kdf j.rk hash_dh_shared_secret in
+		j.rk <- rk_bis;
+		j.ck <- ck_bis;
+		j.sending <- false;
+		j.receiving <- true;
+		end;
+	afficher j;
+	let ck_bis, mk_hash = kdf j.ck (safe_hash "") in 
+	let mk = Aes.generate_key_deterministe mk_hash in
+	let m = Aes.decrypt mk c in
+	m;;
+
