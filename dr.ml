@@ -51,6 +51,8 @@ let safe_hash s = Z.logor (Rsa.base_to_int (Z.of_int 256) (List.map Z.of_int (Li
 
 type hash = Z.t;; (* haché de 256 bits *)
 type aes_key = Z.t;; (* Clef  AES128 donc 256 bits*)
+type plaintext = string;;
+type ciphertext = string;;
 
 (* Notations reprises de la documentation Signal : https://signal.org/docs/specifications/doubleratchet/ *)
 type root_key = hash;; (* Entier de 256 bits *)
@@ -67,3 +69,27 @@ type interlocuteur = {
 	pk : dh_publique_key; (* Comme pour le RSA, pointe vers la clef publique de l'autre interlocuteur*)
 };;
 
+let kdf (h1 : hash) (h2 : hash) : (hash * hash) =
+	(* Fonction de dérivation de clef, implémenté grâce à des fonctions de hachage *)
+	let s1 = Z.to_string h1 and s2 = Z.to_string h2 in
+	safe_hash (s1^s2), safe_hash (s2^s1);;
+
+let init () : (interlocuteur * interlocuteur) = 
+	let alice_secret_rk = choose_secret () and bob_secret_rk = choose_secret () in
+	let alice_share_rk = share_secret alice_secret_rk and bob_share_rk = share_secret bob_secret_rk in
+	let alice_sk = choose_secret () and bob_sk = choose_secret () in
+	let alice_pk = share_secret alice_sk and bob_pk = share_secret bob_sk in
+	let alice = {
+		rk = compute_secret alice_secret_rk bob_share_rk;
+		ck = z0;
+		mk = z0;
+		sk = alice_sk;
+		pk = bob_pk;
+	} and bob = {
+		rk = compute_secret bob_secret_rk alice_share_rk;
+		ck = z0;
+		mk = z0;
+		sk = bob_sk;
+		pk = alice_pk;
+	} in alice, bob;;
+	
