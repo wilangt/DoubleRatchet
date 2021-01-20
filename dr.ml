@@ -1,4 +1,4 @@
-(*** Implémentation de l'algorithme du double Ratchet ***)
+(*** Implémentation de l'algorithme du Double Ratchet ***)
 
 
 (* Implémentation de l'échange de clef Diffie–Hellman *)
