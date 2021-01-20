@@ -2,7 +2,8 @@
 
 let pnl = print_newline and ps = print_string and pi = print_int and pz = Z.print and pf = Printf.printf;;
 
-let pause = read_line;;
+(* let pause = read_line;; *)
+let pause () = pnl () ; 1;;
 
 let pf s = ps s; let _ = pause () in ();; (* aller à la ligne *)
 let pff s = ps s; pnl (); let _ = pause () in ();; (* sauter une ligne *)
@@ -35,8 +36,8 @@ pzf d;;
 pnl ();;
 
 pff "Idem pour Bob";;
-
 let sk_bob, pk_bob = Rsa.generate_keys 2048;;
+
 pf "Puis Alice et Bob échangent leur clef publique tout en gardant leur clef secrète pour eux.";;
 let alice = {sk = sk_alice; pk = pk_bob} and bob = {sk = sk_bob; pk = pk_alice};;
 pff "Alice et Bob peuvent désormais chiffrer des messages pour l'autre et donc s'échanger des secrets.";;

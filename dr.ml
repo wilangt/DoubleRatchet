@@ -19,3 +19,10 @@ let choose_secret () = random_int 1024;;
 let share_secret sk = Z.powm g2048 sk p2048;;
 
 let compute_secret sk shared = Z.powm shared sk p2048;;
+
+
+(* Récupération d'une fonction de hachage depuis cryptotool *)
+
+let sha256 = Cryptokit.hash_string (Cryptokit.Hash.sha256 ()) ;;
+let explode s = List.init (String.length s) (String.get s);;
+let hash s = Rsa.base_to_int (Z.of_int 256) (List.map Z.of_int (List.map Char.code (explode (sha256 s))));;

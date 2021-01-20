@@ -1,1 +1,1 @@
-(*** Implémentation du cryptosystème AES ***)
+(*** Utilisation de l'implémentation de AES de NoCrypto ***)

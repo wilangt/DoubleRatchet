@@ -106,3 +106,16 @@ let k1 = Dr.compute_secret a bb and k2 = Dr.compute_secret b aa;;
 ztest "k1" k1;;
 ztest "k2" k2;;
 test "ok ?" (bti (k1 = k2));;
+
+
+let hash = Cryptokit.Hash.sha256 ();;
+
+let s = Cryptokit.hash_string hash "bacon";;
+
+let explode = List.init (String.length s) (String.get s) in
+let ex_int = List.map Char.code explode in
+List.iter print_int ex_int;;
+print_newline ();; print_newline ();;
+
+ztest "hash sha256" (Dr.hash "bacon");;
+test "nb bits" (Z.numbits (Dr.hash "hdfsqdsfh67886jklq"));;
