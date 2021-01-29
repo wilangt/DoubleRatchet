@@ -42,7 +42,7 @@ let alice = {sk = sk_alice; pk = pk_bob} and bob = {sk = sk_bob; pk = pk_alice};
 pff "Alice et Bob peuvent désormais chiffrer des messages pour l'autre et donc s'échanger des secrets.";;
 
 pf "Par exemple, Alice veut envoyer 'Bonjour Bob' à Bob. Elle commence par chiffrer ce message avec la clef publique de Bob :";;
-let message_chiffre = Rsa.encrypt_message alice.pk "Bonjour Bob";; 
+let message_chiffre = Rsa.encrypt_message alice.pk "Bonjour Bob";;
 (* On rappelle que les clefs publiques ont été échangées et donc que alice.pk désigne la clef publique de Bob *)
 pzf (List.hd message_chiffre);;
 pff "Si le message est trop gros (ce n'est pas le cas ici), il est automatiquement découpé en plusieurs morceaux.";;
@@ -55,7 +55,7 @@ pf "la conversation peut ainsi continuer ...";;
 pff (Rsa.decrypt_message alice.sk (Rsa.encrypt_message bob.pk "Bonjour Alice"));;
 
 pf "Et des messages beaucoup plus gros peuvent être envoyés :"
-let dream = 
+let dream =
 "I am happy to join with you today in what will go down in history as the greatest demonstration for freedom in the history of our nation.
 Five score years ago a great American in whose symbolic shadow we stand today signed the Emancipation Proclamation. This momentous decree came as a great beckoning light of hope to millions of Negro slaves who had been seared in the flames of withering injustice. It came as a joyous daybreak to end the long night of their captivity.
 But one hundred years later the Negro is still not free. One hundred years later the life of the Negro is still sadly crippled by the manacles of segregation and the chains of discrimination.
@@ -98,7 +98,7 @@ pff dechiffre;;
 pf "On peut chiffrer des messages arbitrairement long grâce à la librairie cryptokit : ";;
 pff (Aes.encrypt key dream);;
 
-pf "Et surtout on a implémenté une version déterministe de l'algorithme de génération de clef : 
+pf "Et surtout on a implémenté une version déterministe de l'algorithme de génération de clef :
 à partir d'un hashé de 256 bits ..."
 let h = Dr.safe_hash (Aes.random_string 50);;
 pzf h;;
@@ -113,13 +113,13 @@ pff "Cela nous sera très utile pour la suite";;
 
 pff " * * * * * * * * * * Algorithme du Double Ratchet * * * * * * * * * * ";;
 
-pff "L'algorithme du Double Ratchet (anciennement Axolotl Ratchet) est un algorithme de 
-gestion de clés cryptographique développé en 2013. Il est utilisé par de nombreux services 
+pff "L'algorithme du Double Ratchet (anciennement Axolotl Ratchet) est un algorithme de
+gestion de clés cryptographique développé en 2013. Il est utilisé par de nombreux services
 de messagerie instantanée (Signal et WhatsApp par exemple) pour chiffrer les conversations
-de bout en bout, avec des hypothèses de sécurité interressante.\n
-Décrire le fonctionnement de l'algorithme ici serait long et peu interressant donc le lecteur 
-est invité à regarder cette vidéo https://www.youtube.com/watch?v=9sO2qdTci-s (11 minutes) et 
-à admirer son fonctionnement";;
+de bout en bout, avec des hypothèses de sécurité intéressantes.\n
+Décrire le fonctionnement de l'algorithme ici serait long et peu intéressant. Le lecteur
+est donc invité à regarder cette vidéo https://www.youtube.com/watch?v=9sO2qdTci-s (11 minutes) et
+à oserver son fonctionnement";;
 
 pff "Initialisation de la conversation ... ";;
 let alice, bob = Dr.init ();;
@@ -128,7 +128,7 @@ Dr.afficher alice;;
 pf "État de Bob : ";;
 Dr.afficher bob;;
 
-pff "On notera une harmonisation de certains paramètres. Cette synchronisation se conserve au fur et à mesur des messages.";;
+pff "On notera une harmonisation de certains paramètres. Cette synchronisation se conserve au fur et à mesure des messages.";;
 
 pf "Si Alice veut saluer bob, elle envoie";;
 let c,s = Dr.encrypt alice "Bonjour";;
@@ -146,13 +146,13 @@ pff m;;
 
 pff "On peut ainsi continuer indéfiniment, avec parfois plusieurs messages d'affilé de la même personne.";;
 
-pf (Dr.decrypt alice (Dr.encrypt bob "message 1"));; (* Bob -> Alice *)
-pf (Dr.decrypt bob (Dr.encrypt alice "message 2"));; (* Alice -> Bob *)
-pf (Dr.decrypt alice (Dr.encrypt bob "message 3"));; (* Bob -> Alice *)
-pf (Dr.decrypt alice (Dr.encrypt bob "message 4"));; (* Bob -> Alice *)
-pf (Dr.decrypt alice (Dr.encrypt bob "message 5"));; (* Bob -> Alice *)
-pf (Dr.decrypt bob (Dr.encrypt alice "message 5"));; (* Alice -> Bob *)
-pf (Dr.decrypt bob (Dr.encrypt alice "message 7"));; (* Alice -> Bob *)
-pff (Dr.decrypt alice (Dr.encrypt bob "message 8"));; (* Bob -> Alice *)
+pf (Dr.decrypt alice (Dr.encrypt bob "message 1 : Bob -> Alice"));; (* Bob -> Alice *)
+pf (Dr.decrypt bob (Dr.encrypt alice "message 2 : Alice -> Bob"));; (* Alice -> Bob *)
+pf (Dr.decrypt alice (Dr.encrypt bob "message 3 : Bob -> Alice"));; (* Bob -> Alice *)
+pf (Dr.decrypt alice (Dr.encrypt bob "message 4 : Bob -> Alice"));; (* Bob -> Alice *)
+pf (Dr.decrypt alice (Dr.encrypt bob "message 5 : Bob -> Alice"));; (* Bob -> Alice *)
+pf (Dr.decrypt bob (Dr.encrypt alice "message 6 : Alice -> Bob"));; (* Alice -> Bob *)
+pf (Dr.decrypt bob (Dr.encrypt alice "message 7 : Alice -> Bob"));; (* Alice -> Bob *)
+pff (Dr.decrypt alice (Dr.encrypt bob "message 8 : Bob -> Alice"));; (* Bob -> Alice *)
 
-pff "THE END";;
+pff "FIN";;
